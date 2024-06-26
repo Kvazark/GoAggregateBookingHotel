@@ -8,7 +8,15 @@ Content-Type: application/json
   "id": "guid-1-hotel",
   "name": "CatRaHotel",
   "address": "г. Котязнь, ул. Мемная. д 7",
-  "hotelStarRating": "4.4"
+  "hotelStarRating": 4.2
+}
+
+### Обновить рейтинг отеля 
+POST {{base_address}}/updateHotelStarRating/guid-1-hotel
+Content-Type: application/json
+
+{
+  "hotelStarRating": 4.6
 }
 
 ### Добавление новой комнаты
@@ -17,9 +25,21 @@ Content-Type: application/json
 
 {
   "id": "guid-1-room",
-  "capacity": 1,
   "numberRoom": "101D",
-  "roomCategory": "Standart",
-  "baseRoomPrice": 10.5
 }
+
+### Добавление новой комнаты
+POST {{base_address}}/addNewRoom/guid-1-hotel
+Content-Type: application/json
+
+{
+  "id": "guid-2-room",
+  "numberRoom": "201A",
+}
+
+### Получить список всех отелей
+GET {{base_address}}/hotels
+
+### Получить список всех комнат
+GET {{base_address}}/rooms
 

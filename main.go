@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"math/rand"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -13,15 +15,16 @@ type Hotel struct {
 	ID              string  `json:"id"`
 	Name            string  `json:"name"`
 	Address         string  `json:"address"`
-	HotelStarRating float32 `json:"hotelStarRating "`
+	HotelStarRating float64 `json:"hotelStarRating"`
 }
 
 type Room struct {
-	ID           string `json:"id"`
-	NumberRoom   string `json:"numberRoom"`
-	RoomCategory string `json:"roomCategory "`
-	Capacity     int    `json:"capacity"`
-	HotelInfo    Hotel  `json:"hotelInfo,omitempty"`
+	ID            string  `json:"id"`
+	NumberRoom    string  `json:"numberRoom"`
+	RoomCategory  string  `json:"roomCategory"`
+	Capacity      int     `json:"capacity"`
+	BaseRoomPrice float64 `json:"baseRoomPrice"`
+	HotelInfo     Hotel   `json:"hotelInfo,omitempty"`
 }
 
 var hotels = make(map[string]Hotel)
@@ -72,6 +75,7 @@ func addNewHotel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(hotel)
 	hotels[hotel.ID] = hotel
 
 	w.Header().Set("Content-Type", "application/json")
@@ -79,7 +83,7 @@ func addNewHotel(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateHotelRating(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
+	hotelId := chi.URLParam(r, "idHotel")
 	var hotel Hotel
 	err := json.NewDecoder(r.Body).Decode(&hotel)
 	if err != nil {
@@ -87,17 +91,17 @@ func updateHotelRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hotel, ok := hotels[idStr]
-
+	existingHotel, ok := hotels[hotelId]
 	if !ok {
 		http.Error(w, "Hotel not found", http.StatusNotFound)
 		return
 	}
 
-	hotels[idStr] = hotel
+	existingHotel.HotelStarRating = hotel.HotelStarRating
+	hotels[hotelId] = existingHotel
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(hotel)
+	json.NewEncoder(w).Encode(existingHotel)
 }
 
 func listRooms(w http.ResponseWriter, _ *http.Request) {
@@ -141,9 +145,46 @@ func addNewRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	randomCategory, randomCapacity := getRandomRoomDetails()
+	room.RoomCategory = randomCategory
+	room.Capacity = randomCapacity
+
+	room.BaseRoomPrice = calculateBaseRoomPrice(room.RoomCategory, hotel.HotelStarRating, room.Capacity, w)
 	room.HotelInfo = hotel
 	rooms[room.ID] = room
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(room)
+}
+
+func calculateBaseRoomPrice(roomCategory string, hotelStarRating float64, capacity int, w http.ResponseWriter) float64 {
+	var basePrice float64
+	switch roomCategory {
+	case "Standard":
+		basePrice = 50 * hotelStarRating
+	case "JuniorSuite":
+		basePrice = 100 * hotelStarRating
+	case "Deluxe":
+		basePrice = 150 * hotelStarRating
+	case "Suite":
+		basePrice = 200 * hotelStarRating
+	default:
+		http.Error(w, "Category is required", http.StatusNotFound)
+	}
+
+	if capacity > 2 {
+		basePrice += 15 * float64(capacity)
+	}
+
+	return math.Ceil(basePrice)
+}
+
+func getRandomRoomDetails() (string, int) {
+	roomCategories := []string{"Standard", "JuniorSuite", "Deluxe", "Suite"}
+	capacities := []int{1, 2, 3, 4, 6}
+
+	randomCategory := roomCategories[rand.Intn(len(roomCategories))]
+	randomCapacity := capacities[rand.Intn(len(capacities))]
+
+	return randomCategory, randomCapacity
 }
