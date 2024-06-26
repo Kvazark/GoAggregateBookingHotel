@@ -1,0 +1,25 @@
+@base_address = http://localhost:8080/api
+
+### Создать новый отель 
+POST {{base_address}}/addNewHotel
+Content-Type: application/json
+
+{
+  "id": "guid-1-hotel"
+  "name": "CatRaHotel",
+  "address": "г. Котязнь, ул. Мемная. д 7",
+  "hotelStarRating": "4.4"
+}
+
+### Добавление новой комнаты
+POST {{base_address}}/addNewRoom/guid-1-hotel
+Content-Type: application/json
+
+{
+  "hotelId": "guid-1-hotel",
+  "capacity": 1,
+  "numberRoom": "101D",
+  "roomCategory": "Standart",
+  "baseRoomPrice": 10.5
+}
+
