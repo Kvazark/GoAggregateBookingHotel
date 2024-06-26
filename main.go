@@ -17,11 +17,11 @@ type Hotel struct {
 }
 
 type Room struct {
-	ID           string  `json:"id"`
-	NumberRoom   string  `json:"numberRoom"`
-	RoomCategory string  `json:"roomCategory "`
-	Capacity     int     `json:"capacity"`
-	HotelId      *string `json:"hotel"`
+	ID           string `json:"id"`
+	NumberRoom   string `json:"numberRoom"`
+	RoomCategory string `json:"roomCategory "`
+	Capacity     int    `json:"capacity"`
+	HotelInfo    Hotel  `json:"hotelInfo,omitempty"`
 }
 
 var hotels = make(map[string]Hotel)
@@ -123,12 +123,25 @@ func addNewRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, ok := rooms[room.ID]
-	if ok {
-		http.Error(w, "Hotel already exists", http.StatusConflict)
+	if _, ok := rooms[room.ID]; ok {
+		http.Error(w, "Room already exists", http.StatusConflict)
 		return
 	}
 
+	hotelId := chi.URLParam(r, "idHotel")
+
+	if hotelId == "" {
+		http.Error(w, "HotelId is required", http.StatusBadRequest)
+		return
+	}
+
+	hotel, ok := hotels[hotelId]
+	if !ok {
+		http.Error(w, "Hotel not found", http.StatusNotFound)
+		return
+	}
+
+	room.HotelInfo = hotel
 	rooms[room.ID] = room
 
 	w.Header().Set("Content-Type", "application/json")
