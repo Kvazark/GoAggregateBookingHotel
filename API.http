@@ -25,7 +25,7 @@ Content-Type: application/json
 
 {
   "id": "guid-1-room",
-  "numberRoom": "101D",
+  "numberRoom": "101D"
 }
 
 ### Добавление новой комнаты
@@ -34,7 +34,7 @@ Content-Type: application/json
 
 {
   "id": "guid-2-room",
-  "numberRoom": "201A",
+  "numberRoom": "201A"
 }
 
 ### Получить список всех отелей
