@@ -100,6 +100,13 @@ func updateHotelRating(w http.ResponseWriter, r *http.Request) {
 	existingHotel.HotelStarRating = hotel.HotelStarRating
 	hotels[hotelId] = existingHotel
 
+	for _, room := range rooms {
+		if room.HotelInfo.ID == hotelId {
+			room.HotelInfo.HotelStarRating = hotel.HotelStarRating
+			rooms[room.ID] = room
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(existingHotel)
 }
